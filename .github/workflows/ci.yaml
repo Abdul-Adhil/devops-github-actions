@@ -1,11 +1,46 @@
-name: Test Workflow
+name: CI-CD Pipeline Exercise 4
 
 on:
   push:
     branches: [main]
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello World"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run tests (uses dist folder)
+        run: npm test
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/devops-app:${{ github.sha }} .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/devops-app:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/devops-app:latest
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/devops-app:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/devops-app:latest
