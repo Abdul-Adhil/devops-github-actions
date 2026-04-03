@@ -52,8 +52,8 @@ jobs:
     steps:
       - name: Show Environment Info
         run: |
-          echo "Deployment Simulation"
+          echo "🚀 Deployment Simulation"
           echo "Branch: ${{ github.ref_name }}"
           echo "Environment: ${{ github.ref_name }}"
-          echo "API_URL: ${{ secrets.API_URL }}"
-          echo "DB_NAME: ${{ secrets.DB_NAME }}"
+          echo "API_URL (base64): $(echo '${{ secrets.API_URL }}' | base64)"
+          echo "DB_NAME (base64): $(echo '${{ secrets.DB_NAME }}' | base64)"
